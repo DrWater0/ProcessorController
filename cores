@@ -1,0 +1,17 @@
+#!/bin/bash
+echo -e " "
+echo -e "Processor Enabler/Disabler"
+echo -e " "
+
+lscpu | grep "CPU(s)"
+echo -e " "
+echo -e "Would You like to Enable [1] OR Disable [0] a Processor..." 
+read ENABLEDISABLE
+echo -e "Which Processor would you like to Enable or Disable [#]..."
+read CORENUMBER
+echo $ENABLEDISABLE | sudo tee /sys/devices/system/cpu/cpu$CORENUMBER/online
+
+echo -e " "
+
+
+lscpu | grep "CPU(s)"
