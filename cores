@@ -3,13 +3,49 @@ echo -e " "
 echo -e "Processor Enabler/Disabler"
 echo -e " "
 
+VALID1="0"
+VALID2="1"
+PATH1="/sys/devices/system/cpu/cpu"
+PATH2="/online"
+
 lscpu | grep "CPU(s)"
 echo -e " "
 echo -e "Would You like to Enable [1] OR Disable [0] a Processor..." 
 read ENABLEDISABLE
-echo -e "Which Processor would you like to Enable or Disable [#]..."
+
+if [[ "$ENABLEDISABLE" == "$VALID1" || "$ENABLEDISABLE" == "$VALID2" ]]; then
+	echo -e "OK..."
+else
+	echo -e "ERROR" && exit
+fi
+
+echo -e "Which Processor(s) would you like to Enable or Disable [#] [#..#]..."
 read CORENUMBER
-echo $ENABLEDISABLE | sudo tee /sys/devices/system/cpu/cpu$CORENUMBER/online
+
+re='^[0-9]+$'
+re2='[,]'
+re3='[..]'
+if [[ $CORENUMBER =~ $re ]] ; then
+	echo -e "OK... [1]"
+	echo $ENABLEDISABLE | sudo tee $PATH1$CORENUMBER$PATH2
+elif [[ $CORENUMBER =~ $re2 ]] ; then
+	echo -e "OK... [CSV]"
+	#Needs to splid enabledisable variable into a CSV
+	echo $ENABLEDISABLE | sudo tee $PATH1$CORENUMBER$PATH2
+elif [[ $CORENUMBER =~ $re3 ]] ; then
+	echo -e "OK... [RANGE]"
+	#split enabledisable into two parts
+	CORERANGE1=$(echo $CORENUMBER | cut -d. -f1)
+	CORERANGE2=$(echo $CORENUMBER | cut -d. -f3)
+	#echo $ENABLEDISABLE | sudo tee $PATH1{"$CORERANGE1".."$CORERANGE2"}$PATH2
+		for ((i=$CORERANGE1; i<=$CORERANGE2; i++))
+		do
+ 		 echo $ENABLEDISABLE | sudo tee $PATH1$i$PATH2
+			done
+			else
+	echo -e "ERROR" && exit
+fi
+
 
 echo -e " "
 
